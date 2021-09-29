@@ -1,0 +1,16 @@
+{
+  "uuid": "ec791db2-9e55-43ee-8c65-5b467835ff47",
+  "title": "Sample Starting Point for Prolog Autograder",
+  "topic": "Prolog",
+  "tags": [],
+  "type": "v3",
+  "gradingMethod": "External",
+  "singleVariant": true,
+  "externalGradingOptions": {
+    "enabled": true,
+    "image": "cswolf/prairielearn-autograder-prolog",
+    "enableNetworking": false,
+    "serverFilesCourse": ["prolog-grader/"],
+    "entrypoint": "/grade/serverFilesCourse/prolog-grader/run-prolog-unit.sh"
+  }
+}

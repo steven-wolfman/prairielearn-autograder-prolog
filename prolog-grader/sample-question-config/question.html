@@ -1,0 +1,31 @@
+{{#params}}
+<pl-question-panel>
+  <p>
+    Design your question. Perhaps supply some starter code. Our starter code will be finished!
+
+    Ensure that the file name for the submission is <code>code.pl</code>. (We may later allow this to be customized via the <code>data</code> JSON object produced by <code>server.py</code>.)
+  </p>
+  <pl-file-editor
+    file-name=".pl"
+    ace-mode="ace/mode/prolog"
+    ace-theme="ace/theme/monokai"
+    min-lines="5"
+  >%! reverse(L1: list, L2: list)
+%
+%  True if L2 is L1 backward.
+%
+reverse(Xs, Ys) :- rev_helper(Xs, [], Ys).
+
+rev_helper([], Acc, Acc).
+rev_helper([X|Xs], Acc, Out) :- rev_helper(Xs, [X|Acc], Out).
+</pl-file-editor>
+
+Then,
+</pl-question-panel>
+
+<pl-submission-panel>
+  <pl-external-grader-results></pl-external-grader-results>
+  <pl-file-preview></pl-file-preview>
+</pl-submission-panel>
+
+{{/params}}
