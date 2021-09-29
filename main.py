@@ -252,5 +252,5 @@ def main():
     log('finishing')
     finish(True, info)
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()
