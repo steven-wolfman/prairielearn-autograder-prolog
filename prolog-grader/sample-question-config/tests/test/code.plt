@@ -8,6 +8,10 @@
 % Note that -g simply runs the given goal. 
 % -t gives the top-level interactive goal; so, -t halt prevents interactivity.
 % load_test_files/1 automatically discovers code.plt from code.pl.
+%
+% You can review the documentation for plunit at: https://www.swi-prolog.org/pldoc/doc_for?object=section(%27packages/plunit.html%27)
+%
+% You can review its source code at: https://github.com/SWI-Prolog/packages-plunit/blob/master/plunit.pl
 
 % The student's file should be a module and should export the appropriate predicate.
 % This can be managed with the header!
