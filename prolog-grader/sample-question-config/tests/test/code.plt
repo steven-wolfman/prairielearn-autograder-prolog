@@ -13,11 +13,35 @@
 % This can be managed with the header!
 % This file should use the module.
 
-:- use_module(code).
+:- use_module(code, [my_reverse/2]).
+
+type_tag(group, '=G=').
+type_tag(plain, '=P=').
+type_tag(required, '=R=').
+
+test_decorated(Type, Name) :- 
+  Type = group,
+  type_tag(Type, Tag),
+  Points >= 0,
+  print(Tag, ' ', Name),
+
+test_decorated(Type, Name, Points) :- 
+  (Type = plain ; Type = required), type_tag(Type, Tag),
+  integer(Points), Points >= 0,
+  atomic_list_concat([Tag, ' ', Name, ' (', Points, ' points)'], TestID),
+  todo.
+  
+
+
 
 revGroup('\n=G= Every test should be in a group.\n').
 :- revGroup(Name), begin_tests(Name).
 
-test('=P= Simple reverse case (1 points)') :- my_reverse([a,b], [b,a]).
+
+% A successful test.
+test('=P= Simple reverse case, successful (1 points)') :- my_reverse([a,b], [b,a]).
+
+% A failing test.
+test('=P= Broken reverse test (1 points)') :- my_reverse([1,2,3], [1,2,3]).
 
 :- revGroup(Name), end_tests(Name).
