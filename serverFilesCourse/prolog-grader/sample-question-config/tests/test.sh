@@ -107,4 +107,4 @@ msg "Found library at \"${LIBRARY_PATH}\""
 
 
 # Now call swipl:
-#swipl -p grader="${LIBRARY_PATH}" -g 'load_test_files([]), run_tests' -t halt "${FILE_LOCATION}"
+swipl -p grader="${LIBRARY_PATH}" -g 'load_test_files([]), run_tests' -t halt "${FILE_LOCATION}"
