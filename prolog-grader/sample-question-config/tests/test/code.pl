@@ -5,7 +5,7 @@
 :- module(code, [my_reverse/2]).
 
 
-%! my_reverse(L1: list, L2: list)
+%! my_reverse(+L1: list, L2: list)
 %
 %  True if L2 is L1 backward.
 %
