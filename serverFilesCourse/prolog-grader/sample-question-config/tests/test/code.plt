@@ -41,6 +41,7 @@ test_decorated(plain, 'Some non-empty cases, mixed', 1, [all(X/Y == [a/b, a/b])]
     my_reverse([b, _, X], [a, c, Y])
   ).
 :- end_test_decorated('Working Tests').
+
 :- begin_test_decorated('Broken Tests').
 test_decorated(plain, 'Sample broken test', 2) :-
   my_reverse([a], []).
