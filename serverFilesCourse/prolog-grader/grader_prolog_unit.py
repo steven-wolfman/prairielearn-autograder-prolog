@@ -16,47 +16,8 @@ SWIPL_RUN_COMMAND = [
     'src/code.pl'
 ]
 
-def main():
-
+def process(lines):
     grading_result = {}
-
-    # Attempt to compile student code
-    try:
-        #'stack test' would compile and run tests cases at the same time
-        subprocess.check_output(SWIPL_RUN_COMMAND, stderr=subprocess.STDOUT, timeout=60)
-
-    except subprocess.CalledProcessError as e:
-        # Run failed :(
-        if re.search(f"{GROUP_START_PREFIX}=G=",e.output.decode('utf-8')):
-            grading_result['succeeded'] = True
-            # we're okay, the exit code is from a test failure
-        else:
-            grading_result['succeeded'] = False
-            grading_result['score'] = 0.0
-            grading_result['message'] = 'Test run failed with no test output, with error code {}. Please check your code for infinite recursion or syntax errors.'.format(e.returncode)
-            grading_result['output'] = e.output.decode('utf-8')
-
-            print(json.dumps(grading_result))
-            return
-    except subprocess.TimeoutExpired:
-        grading_result['succeeded'] = False
-        grading_result['score'] = 0.0
-        grading_result['message'] = 'Your code timed out. Check for infinite recursion!'
-    except Exception as e:
-        grading_result['succeeded'] = False
-        grading_result['score'] = 0.0
-        grading_result['message'] = 'Unspecified error; contact course staff: ' + str(e)
-    # Student code ran successfully!
-
-    #read the output of terminal
-    #Citation: fix the bug of subprocess.Popen for large output https://stackoverflow.com/questions/4408377/how-can-i-get-terminal-output-in-python
-    with tempfile.TemporaryFile() as tempf:
-        proc = subprocess.Popen(SWIPL_RUN_COMMAND, stdout=tempf)
-        proc.wait(timeout=60)
-        tempf.seek(0)
-        tests_results_raw = tempf.read().decode().split('\n')
-
-    #reorganized the raw test results: clean the empty strings and generate a well-organized dictionary
 
     # States
     # prelude = Before the first group
@@ -68,7 +29,6 @@ def main():
 
     state = "prelude"
 
-    tests_results_itmd = list(filter(lambda s : s != '', tests_results_raw))
     tests_results_dict = {'Pass':{}, 'Fail':{}}
 
     groupName = ""
@@ -94,7 +54,7 @@ def main():
         points = 0
         message = ""
 
-    for line in tests_results_itmd:
+    for line in lines:
         if debug:
            print(state, line)
 
@@ -260,6 +220,59 @@ def main():
 
     if allFail:
         grading_result['score'] = 0
+
+    return grading_result
+
+def main():
+
+    grading_result = {}
+
+    # Attempt to compile student code
+    try:
+        #'stack test' would compile and run tests cases at the same time
+        subprocess.check_output(SWIPL_RUN_COMMAND, stderr=subprocess.STDOUT, timeout=60)
+
+    except subprocess.CalledProcessError as e:
+        # Run failed :(
+        if re.search(f"{GROUP_START_PREFIX}=G=",e.output.decode('utf-8')):
+            grading_result['succeeded'] = True
+            # we're okay, the exit code is from a test failure
+        else:
+            grading_result['succeeded'] = False
+            grading_result['score'] = 0.0
+            grading_result['message'] = 'Test run failed with no test output, with error code {}. Please check your code for infinite recursion or syntax errors.'.format(e.returncode)
+            grading_result['output'] = e.output.decode('utf-8')
+
+            print(json.dumps(grading_result))
+            return
+    except subprocess.TimeoutExpired:
+        grading_result['succeeded'] = False
+        grading_result['score'] = 0.0
+        grading_result['message'] = 'Your code timed out. Check for infinite recursion!'
+
+        print(json.dumps(grading_result))
+        return
+    except Exception as e:
+        grading_result['succeeded'] = False
+        grading_result['score'] = 0.0
+        grading_result['message'] = 'Unspecified error; contact course staff: ' + str(e)
+
+        print(json.dumps(grading_result))
+        return
+    # Student code ran successfully!
+
+    #read the output of terminal
+    #Citation: fix the bug of subprocess.Popen for large output https://stackoverflow.com/questions/4408377/how-can-i-get-terminal-output-in-python
+    with tempfile.TemporaryFile() as tempf:
+        proc = subprocess.Popen(SWIPL_RUN_COMMAND, stdout=tempf)
+        proc.wait(timeout=60)
+        tempf.seek(0)
+        tests_results_raw = tempf.read().decode().split('\n')
+
+    #reorganized the raw test results: clean the empty strings and generate a well-organized dictionary
+    tests_results_itmd = list(filter(lambda s : s != '', tests_results_raw))
+
+    grading_result = process(tests_results_itmd)
 
     # Write the grading results to stdout
     print(json.dumps(grading_result))
