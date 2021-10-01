@@ -37,7 +37,7 @@ def process(lines):
     message = ""
     points = 0
     allFail = False
-    debug = True
+    debug = False
 
     for line in lines:
         if debug:
@@ -254,7 +254,7 @@ def main():
     #read the output of terminal
     #Citation: fix the bug of subprocess.Popen for large output https://stackoverflow.com/questions/4408377/how-can-i-get-terminal-output-in-python
     with tempfile.TemporaryFile() as tempf:
-        proc = subprocess.Popen(SWIPL_RUN_COMMAND, stdout=tempf)
+        proc = subprocess.Popen(SWIPL_RUN_COMMAND, stderr=subprocess.STDOUT, stdout=tempf)
         proc.wait(timeout=60)
         tempf.seek(0)
         tests_results_raw = tempf.read().decode().split('\n')

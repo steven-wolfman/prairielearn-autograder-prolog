@@ -10,14 +10,8 @@
     ace-mode="ace/mode/prolog"
     ace-theme="ace/theme/monokai"
     min-lines="5"
-  >%! reverse(L1: list, L2: list)
-%
-%  True if L2 is L1 backward.
-%
-reverse(Xs, Ys) :- rev_helper(Xs, [], Ys).
-
-rev_helper([], Acc, Acc).
-rev_helper([X|Xs], Acc, Out) :- rev_helper(Xs, [X|Acc], Out).
+  >
+my_reverse(Xs, Sx).
 </pl-file-editor>
 
 Then,
