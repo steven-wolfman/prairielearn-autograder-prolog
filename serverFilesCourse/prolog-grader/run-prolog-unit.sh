@@ -5,7 +5,7 @@
 ##### SETUP #####
 echo "Setting up..."
 
-GRADER_NAME='grader-prolog-unit.py'
+GRADER_NAME='grader_prolog_unit.py'
 LIBRARY_NAME='plplunit.pl'
 JOB_DIR='/grade/'
 STUDENT_DIR=$JOB_DIR'student/'
