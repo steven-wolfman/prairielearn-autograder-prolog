@@ -10,7 +10,7 @@ GROUP_END_PREFIX = "End PrairieLearn Prolog Test Group: "
 
 SWIPL_RUN_COMMAND = [
     '/usr/bin/swipl', 
-    '-p', f'grader=/grade/run',
+    '-p', 'grader=/grade/run',
     '-g', 'load_test_files([]), run_tests',
     '-t', 'halt',
     'src/code.pl'
@@ -43,11 +43,11 @@ def process(lines):
         if debug:
            print(state, line)
 
-        groupStart = re.match(f" *{GROUP_START_PREFIX}=G= (?P<name>.*)", line)
-        groupEnd = re.match(f" *{GROUP_END_PREFIX}=G= (?P<name>.*)", line)
-        testStart = re.match(f" *{TEST_START_PREFIX}=(?P<type>[RP])= (?P<name>.*) \((?P<points>[0-9]+) points?\).*", line)
-        errorIndicator = re.match(f" *ERROR: .*", line)
-        warningIndicator = re.match(f" *Warning: .*", line)
+        groupStart = re.match(" *{}=G= (?P<name>.*)".format(GROUP_START_PREFIX), line)
+        groupEnd = re.match(" *{}=G= (?P<name>.*)".format(GROUP_END_PREFIX), line)
+        testStart = re.match(" *{}=(?P<type>[RP])= (?P<name>.*) \((?P<points>[0-9]+) points?\).*".format(TEST_START_PREFIX), line)
+        errorIndicator = re.match(" *ERROR: .*", line)
+        warningIndicator = re.match(" *Warning: .*", line)
 
         if groupStart:
             # We want to start the group, but to do so, we should be in one of:
@@ -60,7 +60,7 @@ def process(lines):
 
             # Errors:
             if state == "group":
-                raise RuntimeError(f"Error: group \"{groupStart.group('name')}\"contained within group \"{groupName}\"")
+                raise RuntimeError("Error: group \"{}\"contained within group \"{}\"".format(groupStart.group('name'),groupName))
 
             # Standard behaviour:
             groupName = groupStart.group('name')
@@ -77,9 +77,9 @@ def process(lines):
 
             # Errors:
             if state == "nogroup" or state == "prelude":
-                raise RuntimeError(f"Error: encountered group end for group \"{groupEnd.group('name')}\" while not in a group context")
+                raise RuntimeError("Error: encountered group end for group \"{}\" while not in a group context".format(groupEnd.group('name')))
             if groupName != groupEnd.group('name'):
-                raise RuntimeError(f"Error: encountered group end for group \"{groupEnd.group('name')}\" while in group \"{groupName}\"")
+                raise RuntimeError("Error: encountered group end for group \"{}\" while in group \"{}\"".format(groupEnd.group('name'), groupName))
             
             # Test wrapup:
             if state == "warning" or state == "error":
@@ -110,7 +110,7 @@ def process(lines):
 
             # Errors:
             if state == "nogroup" or state == "prelude":
-                raise RuntimeError(f"Error: encountered test start for test \"{testStart.group('name')}\" while not in a group context")
+                raise RuntimeError("Error: encountered test start for test \"{}\" while not in a group context".format(testStart.group('name')))
             
             # Test wrapup:
             if state == "warning" or state == "error":
@@ -143,7 +143,7 @@ def process(lines):
 
             # Errors:
             if state == "group":
-                raise RuntimeError(f"Error: encountered test error in group \"{groupName}\" but outside any test")
+                raise RuntimeError("Error: encountered test error in group \"{}\" but outside any test".format(groupName))
             
             # Standard behaviour:
             if state == "test" or state == "error" or state == "warning":
@@ -224,7 +224,7 @@ def main():
 
     except subprocess.CalledProcessError as e:
         # Run failed :(
-        if re.search(f"{GROUP_START_PREFIX}=G=",e.output.decode('utf-8')):
+        if re.search("{}=G=".format(GROUP_START_PREFIX),e.output.decode('utf-8')):
             grading_result['succeeded'] = True
             # we're okay, the exit code is from a test failure
         else:
