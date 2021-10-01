@@ -37,22 +37,7 @@ def process(lines):
     message = ""
     points = 0
     allFail = False
-    debug = False
-
-    def wrapupTest():
-        if state == "warning" or state == "error":
-            tests_results_dict['Fail'][testName] = (message,points)
-            message = ""
-            if testRequired:
-                allFail = True
-        elif state == "test":
-            tests_results_dict['Pass'][testName] = points
-        elif debug:
-            print("no test to wrap up")
-        testName = ""
-        testRequired = False
-        points = 0
-        message = ""
+    debug = True
 
     for line in lines:
         if debug:
@@ -60,10 +45,9 @@ def process(lines):
 
         groupStart = re.match(f" *{GROUP_START_PREFIX}=G= (?P<name>.*)", line)
         groupEnd = re.match(f" *{GROUP_END_PREFIX}=G= (?P<name>.*)", line)
-        testStart = re.match(f" *={TEST_START_PREFIX}(?P<type>[RP])= (?P<name>.*)  \((?P<points>[0-9]+) points?\) .*", line)
+        testStart = re.match(f" *{TEST_START_PREFIX}=(?P<type>[RP])= (?P<name>.*) \((?P<points>[0-9]+) points?\).*", line)
         errorIndicator = re.match(f" *ERROR: .*", line)
         warningIndicator = re.match(f" *Warning: .*", line)
-        wereDone = re.match(" *% [0-9]+ tests .*",line)
 
         if groupStart:
             # We want to start the group, but to do so, we should be in one of:
@@ -76,7 +60,7 @@ def process(lines):
 
             # Errors:
             if state == "group":
-                raise f"Error: group \"{groupStart.group('name')}\"contained within group \"{groupName}\""
+                raise RuntimeError(f"Error: group \"{groupStart.group('name')}\"contained within group \"{groupName}\"")
 
             # Standard behaviour:
             groupName = groupStart.group('name')
@@ -93,12 +77,24 @@ def process(lines):
 
             # Errors:
             if state == "nogroup" or state == "prelude":
-                raise f"Error: encountered group end for group \"{groupEnd.group('name')}\" while not in a group context"
+                raise RuntimeError(f"Error: encountered group end for group \"{groupEnd.group('name')}\" while not in a group context")
             if groupName != groupEnd.group('name'):
-                raise f"Error: encountered group end for group \"{groupEnd.group('name')}\" while in group \"{groupName}\""
+                raise RuntimeError(f"Error: encountered group end for group \"{groupEnd.group('name')}\" while in group \"{groupName}\"")
             
             # Test wrapup:
-            wrapupTest()
+            if state == "warning" or state == "error":
+                tests_results_dict['Fail'][testName] = (message,points)
+                message = ""
+                if testRequired:
+                    allFail = True
+            elif state == "test":
+                tests_results_dict['Pass'][testName] = points
+            elif debug:
+                print("no test to wrap up")
+            testName = ""
+            testRequired = False
+            points = 0
+            message = ""
 
             # Standard behaviour:
             groupName = ""
@@ -114,10 +110,22 @@ def process(lines):
 
             # Errors:
             if state == "nogroup" or state == "prelude":
-                raise f"Error: encountered test start for test \"{testStart.group('name')}\" while not in a group context"
+                raise RuntimeError(f"Error: encountered test start for test \"{testStart.group('name')}\" while not in a group context")
             
             # Test wrapup:
-            wrapupTest()
+            if state == "warning" or state == "error":
+                tests_results_dict['Fail'][testName] = (message,points)
+                message = ""
+                if testRequired:
+                    allFail = True
+            elif state == "test":
+                tests_results_dict['Pass'][testName] = points
+            elif debug:
+                print("no test to wrap up")
+            testName = ""
+            testRequired = False
+            points = 0
+            message = ""
 
             # Standard behaviour:
             testName = groupName + " / " + testStart.group('name')
@@ -125,7 +133,8 @@ def process(lines):
             points = int(testStart.group('points'))
             state = "test"
         elif errorIndicator or warningIndicator:
-            # An error/warning occurred. We need to record it, but to do so, we should be in one of:
+            # If we're in nogroup or prelude, we ignore.
+            # Otherwise, an error/warning occurred. We need to record it, but to do so, we should be in one of:
             #   test/error/warning
             #   we should collect this line
             #   and we should transition to: error if already in error, otherwise the indicated state (error or warning)
@@ -133,35 +142,16 @@ def process(lines):
                print("errorIndicator")
 
             # Errors:
-            if state == "nogroup" or state == "prelude":
-                raise f"Error: encountered test error outside any group"
-            elif state == "group":
-                raise f"Error: encountered test error in group \"{groupName}\" but outside any test"
+            if state == "group":
+                raise RuntimeError(f"Error: encountered test error in group \"{groupName}\" but outside any test")
             
             # Standard behaviour:
-            message = message + "\n" + line
-            if errorIndicator:
-                state = "error"
-            elif warningIndicator and state != "error":
-                state = "warning"
-        elif wereDone:
-            # we want to finish processing, but to do so, we should be in one of:
-            #   nogroup, and that's it
-            #   and we should break out of the loop
-            #   if we're in prelude, we should report that we found no tests
-            if debug:
-               print("wereDone")
-            
-            # Errors:
-            if state == "prelude":
-                raise f"Error: encountered end of tests before encountering any group"
-            elif state == "group":
-                raise f"Error: encountered end of tests during group \"{groupName}\""
-            elif state == "test" or state == "warning" or state == "error":
-                raise f"Error: encountered end of tests during test \"{testName}\""
-            
-            # Standard behaviour:
-            break
+            if state == "test" or state == "error" or state == "warning":
+                message = message + "\n" + line
+                if errorIndicator:
+                    state = "error"
+                elif warningIndicator and state != "error":
+                    state = "warning"
         else:
             # Some other type of line, which is fine in any case at all.
             # But, if we're in the midst of a test, we should record this in the message.
@@ -169,11 +159,11 @@ def process(lines):
                 message = message + "\n" + line
 
     if state == "prelude":
-        raise "Error: encountered end of file before any group"
+        raise RuntimeError("Error: encountered end of file before any group")
     elif state == "group":
-        raise "Error: encountered end of file during group \"{groupName}\""
+        raise RuntimeError("Error: encountered end of file during group \"{groupName}\"")
     elif state == "test" or state == "warning" or state == "error":
-        raise "Error: encountered end of file during test \"{testName}\""
+        raise RuntimeError("Error: encountered end of file during test \"{testName}\"")
     
     #The final structure of tests_results_dict:
     #      {'Pass': {'Name1':Points1,'Name2':Points2},
