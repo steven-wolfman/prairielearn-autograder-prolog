@@ -20,13 +20,9 @@
 % That would be a great addition.
 
 test_header_prefix('Begin PrairieLearn Prolog Test: ').
-test_footer_prefix('End PrairieLearn Prolog Test: ').
 test_header_prefix(Name, DecName) :-
   test_header_prefix(Header),
   atom_concat(Header, Name, DecName).
-test_footer_prefix(Name, DecName) :-
-  test_footer_prefix(Footer),
-  atom_concat(Footer, Name, DecName).
 
 test_group_header_prefix('Begin PrairieLearn Prolog Test Group: ').
 test_group_footer_prefix('End PrairieLearn Prolog Test Group: ').
