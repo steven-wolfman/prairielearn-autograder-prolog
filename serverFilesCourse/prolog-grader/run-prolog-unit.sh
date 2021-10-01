@@ -6,6 +6,7 @@
 echo "Setting up..."
 
 GRADER_NAME='grader-prolog-unit.py'
+LIBRARY_NAME='plplunit.pl'
 JOB_DIR='/grade/'
 STUDENT_DIR=$JOB_DIR'student/'
 SHARED_DIR=$JOB_DIR'shared/'
@@ -35,8 +36,9 @@ echo "Mustache processing complete."
 # Copy student code into the run directory
 cp -rv $STUDENT_DIR. $AG_DIR'src/'
 
-# Copy the grader script and catch header into the run directory
-cp -v $HASKELL_GRADER_DIR$GRADER_NAME $AG_DIR
+# Copy the grader script and testing library into the run directory
+cp -v $PROLOG_GRADER_DIR$GRADER_NAME $AG_DIR
+cp -v $PROLOG_GRADER_DIR$LIBRARY_NAME $AG_DIR
 
 # give the ag user ownership of the run folder
 /usr/bin/sudo chown -R ag $AG_DIR
@@ -48,9 +50,12 @@ echo "Starting grading..."
 
 cd $AG_DIR
 
-## TODO!!! this doesn't make sense for Prolog unit testing! Need to decide how we're doing this!
-cat src/Lib-header.hs src/Lib.hs > foo.hs
-mv foo.hs src/Lib.hs
+# Construct the code.pl file to perform testing on.
+cat src/code-header.pl src/code.pl > foo.pl
+mv foo.pl src/code.pl
+
+# Move the testing file into place as well.
+mv test/code.plt src/code.plt
 
 
 # run the autograder as non-root
